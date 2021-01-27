@@ -13,7 +13,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-/*public class EasyOpenCVSetUp extends LinearOpMode {
+public class EasyOpenCVSetUp extends LinearOpMode {
 
     OpenCvWebcam Webcam1;
 
@@ -93,4 +93,4 @@ import org.openftc.easyopencv.OpenCvWebcam;
             }
         }
     }
-}**/
+}

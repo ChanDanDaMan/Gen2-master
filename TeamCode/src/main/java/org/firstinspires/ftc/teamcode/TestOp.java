@@ -46,7 +46,6 @@ public class TestOp extends LinearOpMode {
             }else {
                 shooterPower(0);
             }
-            kicker.setPosition(gamepad2.left_stick_x);
 
         }
     }
