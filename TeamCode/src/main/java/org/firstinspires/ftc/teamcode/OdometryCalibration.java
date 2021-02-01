@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -11,11 +14,11 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
 
-@Autonomous
-public class OdometryCalibration extends LinearRobot {
+@TeleOp
+public class OdometryCalibration extends LinearOpMode {
 
     DcMotor fl, fr, bl, br;
-    DcMotor leftEncoder, rightEncoder, middleEncoder;
+    Encoder leftEncoder, rightEncoder, middleEncoder;
 
     BNO055IMU imu;
 
@@ -41,17 +44,32 @@ public class OdometryCalibration extends LinearRobot {
 
     @Override
     public void runOpMode(){
-        leftEncoder = hardwareMap.dcMotor.get("leftEncoder");
-        rightEncoder = hardwareMap.dcMotor.get("rightEncoder");
-        middleEncoder = hardwareMap.dcMotor.get("middleEncoder");
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "fl"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "br"));
+        middleEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "fr"));
+        fl = hardwareMap.get(DcMotorEx.class, "fl");
+        fr = hardwareMap.get(DcMotorEx.class, "fr");
+        bl = hardwareMap.get(DcMotorEx.class, "bl");
+        br = hardwareMap.get(DcMotorEx.class, "br");
 
-        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        middleEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+// get snailed
 
-        leftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        middleEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        fr.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -64,12 +82,12 @@ public class OdometryCalibration extends LinearRobot {
 
         waitForStart();
 
-        while (imu.getAngularOrientation().thirdAngle < 90 && opModeIsActive()){
+        while (getZAngle() < 90 && opModeIsActive()){
             fr.setPower(-calibrationSpeed);
             fl.setPower(calibrationSpeed);
             bl.setPower(calibrationSpeed);
             br.setPower(-calibrationSpeed);
-            if(imu.getAngularOrientation().thirdAngle < 60){
+            if(getZAngle() < 60){
                 fr.setPower(-calibrationSpeed);
                 fl.setPower(calibrationSpeed);
                 bl.setPower(calibrationSpeed);
@@ -91,7 +109,7 @@ public class OdometryCalibration extends LinearRobot {
             telemetry.addLine("waiting....");
         }
 
-        double angle = imu.getAngularOrientation().thirdAngle;
+        double angle = getZAngle();
         double encoderDifference = Math.abs(Math.abs(leftEncoder.getCurrentPosition()) - Math.abs(rightEncoder.getCurrentPosition()) - Math.abs(middleEncoder.getCurrentPosition()));
         double sideEncoderTicksOffset = encoderDifference / angle;
         double sideWheelSeparation = (180 * sideEncoderTicksOffset ) / (TICKS_PER_INCH * Math.PI);
@@ -99,5 +117,9 @@ public class OdometryCalibration extends LinearRobot {
 
         ReadWriteFile.writeFile(sidewheelSeparationFile, String.valueOf(sideWheelSeparation));
         ReadWriteFile.writeFile(middleTickOffsetFile, String.valueOf(middleTickOffset));
+    }
+
+    private double getZAngle(){
+        return (imu.getAngularOrientation().firstAngle);
     }
 }

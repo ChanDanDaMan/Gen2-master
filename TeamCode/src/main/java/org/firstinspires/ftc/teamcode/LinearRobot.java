@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -34,8 +35,8 @@ public class LinearRobot extends LinearOpMode {
     //final private int lowerWobbleArm = ________;
     //final private int raiseWobbleArm = _______;
     //final private int backToZeroPosition = _____;
-   // public OpenCvWebcam Webcam1;
-   // public EasyOpenCvWebcam.UltimateGoalPipeline pipeline;
+   public OpenCvWebcam Webcam1;
+   public EasyOpenCvWebcam.UltimateGoalPipeline pipeline;
 
     static final double TICKS_PER_REV = 537.6;
     static final double WHEEL_DIAMETER = 100/25.4;
@@ -48,17 +49,20 @@ public class LinearRobot extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
 
-        fl = hardwareMap.get(DcMotor.class, "fl");
-        fr = hardwareMap.get(DcMotor.class, "fr");
-        bl = hardwareMap.get(DcMotor.class, "bl");
-        br = hardwareMap.get(DcMotor.class, "br");
+        fl = hardwareMap.get(DcMotorEx.class, "fl");
+        fr = hardwareMap.get(DcMotorEx.class, "fr");
+        bl = hardwareMap.get(DcMotorEx.class, "bl");
+        br = hardwareMap.get(DcMotorEx.class, "br");
         shooter1 = hardwareMap.get(DcMotor.class, "shooter1");
         shooter2 = hardwareMap.get(DcMotor.class, "shooter2");
         wobbleArm = hardwareMap.get(DcMotor.class, "wobbleArm");
         kicker = hardwareMap.get(Servo.class, "kicker");
+        leftEncoder = hardwareMap.get(DcMotor.class, "fl");
+        rightEncoder = hardwareMap.get(DcMotor.class, " bl");
+        middleEncoder = hardwareMap.get(DcMotor.class, "fr");
 
 
-       /* int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         Webcam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam1"), cameraMonitorViewId);
         pipeline = new EasyOpenCvWebcam.UltimateGoalPipeline();
         Webcam1.setPipeline(pipeline);
@@ -76,20 +80,20 @@ public class LinearRobot extends LinearOpMode {
         telemetry.addData("Position", pipeline.position);
         telemetry.addData("FPS", String.format("%.2f", Webcam1.getFps()));
         telemetry.update();
-**/
+
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json";
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        middleEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        middleEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);;
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         wobbleArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         wobbleArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -157,7 +161,7 @@ public class LinearRobot extends LinearOpMode {
         shooter2.setPower(pwr);
     }
 
-   /* public static class UltimateGoalPipeline extends OpenCvPipeline {
+    public static class UltimateGoalPipeline extends OpenCvPipeline {
 
         public enum ringPosition{
             FOUR,
@@ -240,7 +244,7 @@ public class LinearRobot extends LinearOpMode {
         public int getAnalysis() {
             return avgl;
         }
-    }**/
+    }
 
 
     public void robotPlane(double Xposition, double Yposition, double robotPwr, double robotAngle, double error){

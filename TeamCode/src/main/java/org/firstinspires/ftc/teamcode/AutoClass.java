@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp (name = "TestOpOnly")
-public class TestOp extends LinearOpMode {
-
+@Autonomous
+public class AutoClass extends LinearOpMode {
 
     public DcMotor fl, fr, bl, br;
     public DcMotor shooter1, shooter2, intake, wobbleArm;
@@ -17,8 +16,16 @@ public class TestOp extends LinearOpMode {
     //public OpenCvWebcam Webcam1;
     //public EasyOpenCvWebcam.UltimateGoalPipeline pipeline;
 
+    static final double TICKS_PER_REV = 537.6;
+    static final double WHEEL_DIAMETER = 100/25.4;
+    static final double GEAR_RATIO = 1;
+
+    static final double TICKS_PER_INCH = WHEEL_DIAMETER * Math.PI * GEAR_RATIO / TICKS_PER_REV;
+
+    OdometryGlobalCoordinateSystem positionUpdate;
+
     @Override
-    public void runOpMode() {
+    public void runOpMode(){
 
         fl = hardwareMap.get(DcMotor.class, "fl");
         fr = hardwareMap.get(DcMotor.class, "fr");
@@ -76,56 +83,10 @@ public class TestOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-
-            drive();
-
-            if (gamepad1.b) {
-                shooterPower(1);
-            } else {
-                shooterPower(0);
-            }
-            if (gamepad1.a) {
-                kicker.setPosition(0);
-            } else {
-                kicker.setPosition(.5);
-            }
-            if (gamepad1.x){
-                claw.setPosition(1);
-            }else if (gamepad1.y){
-                claw.setPosition(0);
-            }
-
-            if(gamepad1.dpad_down){
-                wobbleArm.setTargetPosition(518);
-                wobbleArm.setPower(.2);
-            }
-            intake.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
-            telemetry.addData("Wobble Arm", wobbleArm.getCurrentPosition());
-            telemetry.update();
+            robotPlane(5,0,.5,0,1);
         }
 
-
     }
-
-
-    public void drive() {
-
-        double r = Math.hypot(-gamepad1.left_stick_x, gamepad1.left_stick_y);
-        double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - (Math.PI / 4);
-        double rightX = gamepad1.right_stick_x;
-        final double v1 = r * Math.cos(robotAngle) + rightX;
-        final double v2 = r * Math.sin(robotAngle) - rightX;
-        final double v3 = r * Math.sin(robotAngle) + rightX;
-        final double v4 = r * Math.cos(robotAngle) - rightX;
-
-        fl.setPower(-v1);
-        fr.setPower(-v2);
-        bl.setPower(-v3);
-        br.setPower(-v4);
-
-    }
-
-
     public void shooterPower(double pwr) {
         shooter1.setPower(pwr);
         shooter2.setPower(pwr);
@@ -138,4 +99,48 @@ public class TestOp extends LinearOpMode {
         br.setZeroPowerBehavior(behavior);
     }
 
+    public void ComputeMotorPowers(double vx, double vy, double a, long t){
+        final double r = 2;
+        final double lx = 12.776;
+        final double ly = 14.258;
+
+        double w1 = (1 / r) * (vx - vy - (lx + ly) * a);
+        double w2 = (1 / r) * (vx + vy + (lx + ly) * a);
+        double w3 = (1 / r) * (vx + vy - (lx + ly) * a);
+        double w4 = (1 / r) * (vx - vy + (lx + ly) * a);
+
+        fl.setPower(w1);
+        fr.setPower(w2);
+        bl.setPower(w3);
+        br.setPower(w4);
+
+        sleep(t);
+    }
+
+    public void robotPlane(double Xposition, double Yposition, double robotPwr, double robotAngle, double error){
+        double X_distance = Xposition - positionUpdate.returnXCoordinate();
+        double Y_distance = Yposition - positionUpdate.returnYCoordinate();
+
+        double distance = Math.hypot(X_distance, Y_distance);
+
+        while (opModeIsActive() && distance > error) {
+            distance = Math.hypot(X_distance, Y_distance);
+            X_distance = Xposition - positionUpdate.returnXCoordinate();
+            Y_distance = Yposition - positionUpdate.returnYCoordinate();
+
+            double robotMovementAngle = Math.toDegrees(Math.atan2(X_distance, Y_distance));
+
+            double X_component = calculateX(robotMovementAngle, robotPwr);
+            double Y_component = calculateY(robotMovementAngle, robotPwr);
+            double offCorrection = robotAngle - positionUpdate.returnOrientation();
+        }
+    }
+
+    private double calculateX(double desiredAngle, double speed){
+        return Math.sin(Math.toRadians(desiredAngle) * speed);
+    }
+
+    private double calculateY(double desiredAngle, double speed){
+        return Math.cos(Math.toRadians(desiredAngle) * speed);
+    }
 }
