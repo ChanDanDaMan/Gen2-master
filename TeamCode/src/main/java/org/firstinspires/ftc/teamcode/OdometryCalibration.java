@@ -39,7 +39,7 @@ public class OdometryCalibration extends LinearOpMode {
 
     static final double TICKS_PER_INCH = WHEEL_DIAMETER * Math.PI * GEAR_RATIO / TICKS_PER_REV;
 
-    File sidewheelSeparationFile = AppUtil.getInstance().getSettingsFile("sidewheelsSeperationFile");
+    File sidewheelSeparationFile = AppUtil.getInstance().getSettingsFile("sidewheelsSeparationFile");
     File middleTickOffsetFile  = AppUtil.getInstance().getSettingsFile("middleTickOffsetFile");
 
     @Override

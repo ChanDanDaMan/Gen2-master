@@ -9,7 +9,7 @@ import java.io.File;
 
 public class OdometryGlobalCoordinateSystem implements Runnable {
 
-    DcMotor leftEncoder, rightEncoder, middleEncoder;
+    Encoder leftEncoder, rightEncoder, middleEncoder;
 
     boolean isRunning = true;
 
@@ -24,10 +24,10 @@ public class OdometryGlobalCoordinateSystem implements Runnable {
 
     int sleepTime;
 
-    File sideWheelSeparationFile = AppUtil.getInstance().getSettingsFile("sideWheelSeparationFile");
+    File sideWheelSeparationFile = AppUtil.getInstance().getSettingsFile("sidewheelsSeparationFile");
     File middleTickOffsetFile = AppUtil.getInstance().getSettingsFile("middleTickOffsetFile");
 
-    public OdometryGlobalCoordinateSystem (DcMotor leftEncoder, DcMotor rightEncoder, DcMotor middleEncoder, double TICKS_PER_INCH, int threadSleepDelay){
+    public OdometryGlobalCoordinateSystem (Encoder leftEncoder, Encoder rightEncoder, Encoder middleEncoder, double TICKS_PER_INCH, int threadSleepDelay){
         this.leftEncoder = leftEncoder;
         this.rightEncoder = rightEncoder;
         this.middleEncoder = middleEncoder;

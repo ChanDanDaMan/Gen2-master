@@ -14,14 +14,9 @@ public class UpdateRobotPositionAuto extends LinearRobot {
         super.runOpMode();
 
         waitForStart();
-
-        positionUpdate = new OdometryGlobalCoordinateSystem(leftEncoder, rightEncoder, middleEncoder, TICKS_PER_INCH, 100);
-        Thread position = new Thread(positionUpdate);
-        position.start();
-
-        while (opModeIsActive()) {
-
-            robotPlane(0 * TICKS_PER_INCH, 24 * TICKS_PER_INCH, .5, 0 *TICKS_PER_INCH, 1);
+        while (opModeIsActive()){
+            fl.setPower(.5);
         }
+
     }
 }
